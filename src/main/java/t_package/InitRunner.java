@@ -21,11 +21,11 @@ public class InitRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Status open = new Status("ღია", "open", "#339999");
+        Status open = new Status("ღია", "open", "#ff8000");
         statusRepository.save(open);
-        Status recive = new Status("მიღებული", "recived", "#77aa99");
+        Status recive = new Status("მიღებული", "recived", "#bfff00");
         statusRepository.save(recive);
-        Status close = new Status("დახურული", "closed", "#33ff22");
+        Status close = new Status("დახურული", "closed", "#00a100");
         statusRepository.save(close);
 
         User user = new User();

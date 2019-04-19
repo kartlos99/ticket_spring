@@ -3,15 +3,16 @@ package t_package.controller;
 import org.springframework.web.bind.annotation.*;
 import t_package.model.Status;
 import t_package.model.Ticket;
-import t_package.model.User;
 import t_package.repository.StatusRepository;
 import t_package.repository.TicketRepository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ticket")
+@CrossOrigin
 public class MainController {
 
     private TicketRepository ticketRepository;
@@ -35,35 +36,52 @@ public class MainController {
         return ticket;
     }
 
+    @GetMapping("/filter")
+    public List<Ticket> getTicketFilter(
+            @RequestParam String filter
+    ) {
+        System.out.println(filter);
+        return ticketRepository.getSearched(filter, filter);
+//        return ticketRepository.findByBodyContainingOrTitleContaining(filter, filter).stream().filter(ticket -> ticket.getActive()).collect(Collectors.toList());
+    }
+
     @PostMapping
     public Object addTicket(
-            @RequestParam String title,
-            @RequestParam String body,
-            @RequestParam(name = "author_id") User author,
-            @RequestParam(name = "worker_id") User worker
-            ) {
+            @RequestBody Ticket ticket
+    ) {
 //        System.out.println(body);
         Status status = statusRepository.findByCode("open");
 
-        Ticket ticket = new Ticket(title, body, true);
-        ticket.setAuthor(author);
-        ticket.setWorker(worker);
         ticket.setStatus(status);
         ticket.setStartDate(new Date());
+        ticket.setActive(true);
         return ticketRepository.save(ticket);
     }
 
     @PutMapping("/{id}")
     public Ticket updateTicket(
-            @RequestBody Ticket ticket
+            @RequestBody Ticket ticket,
+            @PathVariable("id") Ticket ticketInDB
     ) {
+        // tu es bileti daxurulia ( 'closed' statusi ) ar varedaqtirebt
+        if (ticketInDB.getStatus().getCode().equals("closed")) {
+            System.out.println("closed Ticket non editable!");
+            return ticketInDB;
+        }
+
+        // vafiqsirebt daxurvis dros
+        if (ticket.getStatus().getCode().equals("closed")) {
+            ticket.setEndDate(new Date());
+        }
         return ticketRepository.save(ticket);
     }
 
     @DeleteMapping("/{id}")
     public void deleteTicket(@PathVariable("id") Ticket ticket) {
-        ticket.setActive(false);
-        ticketRepository.save(ticket);
+        if (ticket != null) {
+            ticket.setActive(false);
+            ticketRepository.save(ticket);
+        }
     }
 
 
